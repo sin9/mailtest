@@ -1,0 +1,2 @@
+# mailtest
+spring-java mail
