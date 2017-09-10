@@ -29,7 +29,7 @@
 		<property name="converters">
 			<list>
 			<!-- <bean class="cn.sinoutx.springmvc.converter.PhoneNumberConverter"/> -->
-				<bean class="cn.sinoutx.mailtest.model.converter.DateConverter">
+				<!-- <bean class="cn.sinoutx.mailtest.model.converter.DateConverter">
 					<constructor-arg>
 						<array>
 							<value>yyyy-MM-dd HH:mm:ss</value>
@@ -38,7 +38,7 @@
 							<value>yyyy/MM/dd</value>
 						</array>
 					</constructor-arg>
-				</bean>
+				</bean> -->
 			</list>
 		</property>
 	</bean>
@@ -76,14 +76,14 @@
 		<mvc:jsp prefix="/WEB-INF/jsp/" suffix=".jsp" />
 	</mvc:view-resolvers>
 	
-	<!-- 配置拦截器 -->
+	<!-- 
 	<mvc:interceptors>
-		<!-- 此配置方法，表示拦截所有请求 -->
+		此配置方法，表示拦截所有请求
 		<bean class="cn.sinoutx.mailtest.model.interceptor.Test2Interceptor"/>
 		<mvc:interceptor>
 			<mvc:mapping path="/it"/>
 			<mvc:mapping path="/it/*"/>
-			<!-- 通过exclude-mapping可以排除某些请求 -->
+			通过exclude-mapping可以排除某些请求
 			<mvc:exclude-mapping path="/it/mt1"/>
 			<bean class="cn.sinoutx.mailtest.model.interceptor.TestInterceptor"/>
 		</mvc:interceptor>
@@ -94,7 +94,7 @@
 			<mvc:mapping path="/publish/*"/>
 			<bean class="cn.sinoutx.mailtest.model.interceptor.LoginInterceptor"/>
 		</mvc:interceptor>
-	</mvc:interceptors>
+	</mvc:interceptors> -->
 	
 	<!-- 文件上传配置 -->
 	<bean id="multipartResolver"  class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
@@ -115,13 +115,13 @@
 
 	<bean id="javaMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
 	        <!-- 服务器 -->
-	        <property name="host" value="smtp.163.net" />
+	        <property name="host" value="smtp.163.com" />
 	        <!-- 端口号 -->
 	        <property name="port" value="25" />
 	        <!-- 用户名 -->
 	        <property name="username" value="sinout9@163.com" />
 	        <!--  密码   -->
-	        <property name="password" value="wangxin9914" />
+	        <property name="password" value="wangxin1996" />
 	        <!-- SMTP服务器验证 -->
 	        <property name="javaMailProperties">
 	            <props>
@@ -145,7 +145,7 @@
         -->
     </bean>
     
-    <bean id="simpleMail" class="com.fancy.util.Email">
+    <bean id="simpleMail" class="cn.sinout.mailtest.test.Email">
         <property name="javaMailSender" ref="javaMailSender" />
         <property name="simpleMailMessage" ref="simpleMailMessage" />
     </bean>
