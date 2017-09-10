@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" 
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans   
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd  
+        http://www.springframework.org/schema/mvc   
+        http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd  
+        http://www.springframework.org/schema/data/jpa
+    	http://www.springframework.org/schema/data/jpa/spring-jpa.xsd 
+        http://www.springframework.org/schema/tx   
+        http://www.springframework.org/schema/tx/spring-tx-4.3.xsd  
+        http://www.springframework.org/schema/aop   
+        http://www.springframework.org/schema/aop/spring-aop-4.3.xsd   
+        http://www.springframework.org/schema/context   
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+	<!-- 配置Spring的自动扫描 -->
+	<context:component-scan base-package="cn.sinoutx" />
+	
+	
+	<!-- 注册自定义转换器 -->
+	<bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+		<property name="converters">
+			<list>
+			<!-- <bean class="cn.sinoutx.springmvc.converter.PhoneNumberConverter"/> -->
+				<bean class="cn.sinoutx.mailtest.model.converter.DateConverter">
+					<constructor-arg>
+						<array>
+							<value>yyyy-MM-dd HH:mm:ss</value>
+							<value>yyyy-MM-dd</value>
+							<value>yyyy年MM月dd日</value>
+							<value>yyyy/MM/dd</value>
+						</array>
+					</constructor-arg>
+				</bean>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 配置校验器 -->
+	<bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+		<property name="providerClass" value="org.hibernate.validator.HibernateValidator"/>
+	</bean>
+	
+	<!-- 开启mvc注解模式 -->
+	<mvc:annotation-driven conversion-service="conversionService" validator="validator">
+		<mvc:message-converters>
+			<bean class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+				<property name="defaultCharset" value="UTF-8"/>
+				<property name="supportedMediaTypes">
+					<list>
+						<value>application/json;charset=UTF-8</value>
+						<value>text/html;charset=UTF-8</value>
+					</list>
+				</property>
+				<property name="features">
+					<list>
+						<value>WriteMapNullValue</value>
+						<value>QuoteFieldNames</value>
+					</list>
+				</property>
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+	
+	<mvc:default-servlet-handler default-servlet-name="default"/>
+	
+	<!-- 视图解析器 -->
+	<mvc:view-resolvers>
+		<mvc:jsp prefix="/WEB-INF/jsp/" suffix=".jsp" />
+	</mvc:view-resolvers>
+	
+	<!-- 配置拦截器 -->
+	<mvc:interceptors>
+		<!-- 此配置方法，表示拦截所有请求 -->
+		<bean class="cn.sinoutx.mailtest.model.interceptor.Test2Interceptor"/>
+		<mvc:interceptor>
+			<mvc:mapping path="/it"/>
+			<mvc:mapping path="/it/*"/>
+			<!-- 通过exclude-mapping可以排除某些请求 -->
+			<mvc:exclude-mapping path="/it/mt1"/>
+			<bean class="cn.sinoutx.mailtest.model.interceptor.TestInterceptor"/>
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/personal"/>
+			<mvc:mapping path="/personal/*"/>
+			<mvc:mapping path="/publish"/>
+			<mvc:mapping path="/publish/*"/>
+			<bean class="cn.sinoutx.mailtest.model.interceptor.LoginInterceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<!-- 文件上传配置 -->
+	<bean id="multipartResolver"  class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="10485760000" />
+	    	<property name="maxInMemorySize" value="4096" />
+	    	<property name="defaultEncoding" value="UTF-8"/>
+	    	<property name="resolveLazily" value="true"/>  
+	</bean>
+	
+	<!-- 加载properties配置文件属性 -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<array>
+				<value>classpath:db.properties</value>
+			</array>
+		</property>
+	</bean>
+
+	<bean id="dataSource"
+		class="org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy">
+		<property name="targetDataSource">
+			<bean class="com.alibaba.druid.pool.DruidDataSource">
+				<property name="url" value="${db.driverUrl}" />
+				<property name="username" value="${db.user}" />
+				<property name="password" value="${db.password}" />
+				<!-- 配置初始化大小、最小、最大 -->
+				<property name="initialSize" value="1" />
+				<property name="minIdle" value="10" />
+				<property name="maxActive" value="30" />
+
+				<!-- 配置获取连接等待超时的时间 -->
+				<property name="maxWait" value="60000" />
+
+				<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+				<property name="timeBetweenEvictionRunsMillis" value="60000" />
+
+				<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+				<property name="minEvictableIdleTimeMillis" value="300000" />
+
+				<property name="testWhileIdle" value="false" />
+				<property name="testOnBorrow" value="false" />
+				<property name="testOnReturn" value="false" />
+
+				<!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+				<property name="poolPreparedStatements" value="false" />
+				<property name="maxPoolPreparedStatementPerConnectionSize" value="20" />
+				<property name="defaultAutoCommit" value="true" />
+				<property name="ValidationQueryTimeout" value="60000" />
+				<property name="validationQuery" value="select 1" />
+			</bean>
+		</property>
+	</bean>
+	
+	<!-- 指定jpa的dao的根包 -->
+	<jpa:repositories base-package="cn.sinoutx.mailtest.model.dao"/>
+	
+	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="packagesToScan" value="cn.sinoutx.mailtest.model.entity"/>
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
+		</property>
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+    <!-- 配置事务管理器 -->
+	<bean id="jpaTransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory"/>
+		<!-- oracl数据库必须配置这一句话，只读事务才会生效 -->
+		<!-- <property name="enforceReadOnly" value="true"/> -->
+	</bean>
+	
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+		<!-- Mybatis的配置文件路径 -->
+		<!-- <property name="configLocation" value="classpath:mybatis-config.xml"/> -->
+		<property name="mapperLocations" value="classpath*:mappers/*-mapper.xml"/>
+		<property name="typeAliasesPackage" value="cn.sinoutx.blog.model.entity"></property>
+		<property name="plugins">
+			<array>
+				<bean class="com.github.pagehelper.PageInterceptor">
+					<property name="properties">
+						<value>dialect=com.github.pagehelper.PageHelper</value>
+					</property>
+				</bean>
+			</array>
+		</property>
+	</bean>
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+		<property name="basePackage" value="cn.sinoutx.blog.model.mappers"/>
+	</bean>
+	
+    <!-- 配置事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+		<!-- oracl数据库必须配置这一句话，只读事务才会生效 -->
+		<!-- <property name="enforceReadOnly" value="true"/> -->
+	</bean>
+	
+	<!-- 开启注解事务 -->
+	<tx:annotation-driven transaction-manager="jpaTransactionManager"/>
+	
+</beans>
