@@ -121,7 +121,7 @@
 	        <!-- 用户名 -->
 	        <property name="username" value="sinout9@163.com" />
 	        <!--  密码   -->
-	        <property name="password" value="wangxin1996" />
+	        <property name="password" value="00000" />
 	        <!-- SMTP服务器验证 -->
 	        <property name="javaMailProperties">
 	            <props>
